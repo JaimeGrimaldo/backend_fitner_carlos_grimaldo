@@ -6,8 +6,8 @@ const login = async (req, res) => {
 
     try {
         const coach = await Coach.buscarPorEmail(email);
-
-        if (!coach) {
+        const primerCoach = coach[0];
+        if (!primerCoach) {
             return res.status(404).json({ message: "El coach no existe" });
         }
 
@@ -16,19 +16,19 @@ const login = async (req, res) => {
         }
 
         // Por ahora comparamos texto plano (luego usaremos bcrypt)
-        if (coach.password !== password) {
+        if (primerCoach.password !== password) {
             return res.status(401).json({ message: "Contraseña incorrecta" });
         }
 
         const token = jwt.sign(
-            { id: coach.id_coach, nombre: coach.nombre_completo },
+            { id: primerCoach.id_coach, nombre: primerCoach.nombre_completo },
             process.env.JWT_SECRET || "secret_alternativo",
             { expiresIn: "24h" }, // El token expira en un día
         );
         // Si todo está bien, respondemos con éxito
         res.status(200).json({
             message: "Login exitoso",
-            user: { id: coach.id_coach, nombre: coach.nombre_completo },
+            user: { id: primerCoach.id_coach, nombre: primerCoach.nombre_completo },
             token: token,
         });
     } catch (error) {
